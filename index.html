@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Bill Widget</title>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .widget-container {
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        width: 300px;
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: #333333;
+    }
+
+    h2 {
+        font-size: 18px;
+        margin: 20px 0 10px;
+        color: #555555;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+        width: calc(100% - 22px);
+        padding: 10px;
+        margin: 8px 0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    button {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        background-color: #007bff;
+        color: #ffffff;
+        cursor: pointer;
+        font-size: 16px;
+        margin: 10px 0;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+
+    p {
+        font-size: 16px;
+        color: #333333;
+        margin: 5px 0;
+    }
+
+    .status-message {
+        color: #28a745;
+        font-weight: bold;
+    }
+</style>
+<body>
+
+
+    <div x-data="phoneBillWidget()" x-init="getPrices()">
+    
+        <h1>Phone Bill Calculator</h1>
+
+        <!-- Input for phone bill string -->
+        <input type="text" x-model="billString" placeholder="Enter call/sms string (e.g. call,sms,call)">
+        <button @click="calculateBill()">Calculate Total Bill</button>
+
+        <!-- Display total bill -->
+        <p>Total Bill: R<span x-text="totalBill"></span></p>
+
+        <!-- Fetch current prices -->
+        <h2>Current Prices</h2>
+        <button @click="getPrices()">Get Current Prices</button>
+        <p>Call: R<span x-text="prices.call"></span></p>
+        <p>SMS: R<span x-text="prices.sms"></span></p>
+
+        <!-- Update prices -->
+        <h2>Update Prices</h2>
+        <input type="number" step="0.01" x-model="newPrice" placeholder="Enter new price">
+        <select x-model="priceType">
+            <option value="call">Call</option>
+            <option value="sms">SMS</option>
+        </select>
+        <button @click="updatePrice()">Update Price</button>
+
+        <!-- Display update status -->
+        <p x-text="updateStatus"></p>
+    </div>
+
+    <script>
+        function phoneBillWidget() {
+            return {
+                billString: 'call',
+                totalBill: '',
+                prices: {
+                    call: '',
+                    sms: ''
+                },
+                newPrice: '',
+                priceType: 'sms',
+                updateStatus: '',
+
+                async calculateBill() {
+                    try {
+                        const response = await axios.post('http://localhost:3011/api/phonebill/total', {
+                            bill: this.billString
+                        });
+                        this.totalBill = response.data.total;
+                    } catch (error) {
+                        console.error('Error calculating bill:', error);
+                    }
+                },
+
+                async getPrices() {
+                    try {
+                        const response = await axios.get('http://localhost:3011/api/phonebill/prices');
+                        this.prices.call = response.data.call;
+                        this.prices.sms = response.data.sms;
+                    } catch (error) {
+                        console.error('Error fetching prices:', error);
+                    }
+                },
+
+                async updatePrice() {
+                    try {
+                        const response = await axios.post('http://localhost:3011/api/phonebill/price', {
+                            type: this.priceType,
+                            price: parseFloat(this.newPrice)
+                        });
+                        this.updateStatus = response.data.message;
+                    } catch (error) {
+                        console.error('Error updating price:', error);
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,38 @@
+### POST /api/phonebill/total
+POST http://localhost:3011/api/phonebill/total
+Content-Type: application/json
+
+{
+    "bill": "call,sms,call"
+}
+
+### Example Response
+# {
+#     "total": 123.00
+# }
+
+
+### GET /api/phonebill/prices
+GET http://localhost:3011/api/phonebill/prices
+
+### Example Response
+# {
+#     "call": 2.75,
+#     "sms": 0.65
+# }
+
+
+### POST /api/phonebill/price
+POST http://localhost:3011/api/phonebill/price
+Content-Type: application/json
+
+{
+    "type": "sms",
+    "price": 2.85
+}
+
+### Example Response
+# {
+#    "status": "success",
+#    "message": "The sms price was set to 2.85"
+# }
